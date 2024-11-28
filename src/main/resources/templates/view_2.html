@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="view" content="width=device-width, initial-scale=1">
+    <title>template</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        .col-sm-6 {
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid" style="margin: 5px;">
+        <div id="titleDiv" class="row">
+            <div class="col-sm-2">
+                <div id="templateSelect" class="panel panel-default">
+                    <div id="templateName" class="panel-heading" style="text-align: center;">3333</div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">检查：</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">LM</div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <select class="form-control">
+                                            <option>无斑块</option>
+                                            <option>钙化板块</option>
+                                            <option>非钙化板块</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-6" style="display: inline-flex;">
+                                        <label style="margin: 5px;white-space: nowrap;">斑块长度:</label>
+                                        <input type="text" class="form-control" placeholder="bb">
+                                        <label style="margin: 5px;white-space: nowrap;">mm</label>
+                                    </div>
+                                    <div class="col-sm-6" style="display: inline-flex;">
+                                        <label style="margin: 5px;white-space: nowrap;">管腔狭窄:</label>
+                                        <select class="form-control">
+                                            <option>无斑块</option>
+                                            <option>钙化板块</option>
+                                            <option>非钙化板块</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">bb</div>
+                            <div class="panel-body">
+                                <select class="form-control">
+                                    <option>1</option>
+                                    <option>2</option>
+                                    <option>3</option>
+                                    <option>4</option>
+                                    <option>5</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">cc</div>
+                    <div class="panel-body">
+                        <input type="text" class="form-control" placeholder="bb">
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">dd</div>
+                    <div class="panel-body">
+                        <select class="form-control">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="end" class="row">
+            <div class="col-sm-1">
+                <button type="submit" class="btn btn-primary btn-mid" style="margin: 5px;" onclick="save()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/jquery.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script>
+
+    </script>
+</body>
+
+</html>

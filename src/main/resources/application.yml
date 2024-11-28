@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: dev
+#    active: production
+#    active: test
+  application:
+    name: template
+#   password: '123'

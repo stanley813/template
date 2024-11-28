@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>template</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-treeview.min.css" rel="stylesheet">
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="panel panel-default">
+                    <div class="panel-heading" style="text-align: center;">模板维护</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 pre-scrollable">
+                <div id="template" style="height:300px;"></div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <!-- <div id="content" class="well panel-body" style="height:250px;margin-bottom: 0;">
+                    </div> -->
+                    <textarea id="content" class="form-control" rows="12" readonly></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" onclick="edit(this)">修改</button>
+                <button type="submit" class="btn btn-primary" onclick="cancel(this)">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/jquery.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/bootstrap-treeview.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+            var defaultData = [
+                {
+                    text: "Node 1",
+                    color: "#000000",
+                    backColor: "#FFFFFF",
+                    href: "#node-1",
+                    selectable: true,
+                    tags: ['available'],
+                    aa: 'cc',
+                    nodes: [
+                        {
+                            text: "Child 1",
+                            nodes: [
+                                {
+                                    text: "Grandchild 1"
+                                },
+                                {
+                                    text: "Grandchild 2"
+                                }
+                            ]
+                        },
+                        {
+                            text: "Child 2"
+                        }
+                    ]
+                },
+                {
+                    text: "Parent 2"
+                },
+                {
+                    text: "Parent 3"
+                },
+                {
+                    text: "Parent 4"
+                },
+                {
+                    text: "Parent 5"
+                }
+            ];
+
+            $('#template').treeview({
+                color: "#428bca",
+                showBorder: false,
+                data: getData(),
+                onNodeSelected: function (event, data) {
+                    $("#content").val(data.content);
+                    $('#content').prop('readonly', true);
+                    $('button:first').html("修改");
+                }
+            });
+        })
+
+        function getData() {
+            var a = []
+            $.ajax({
+                contentType: "application/json",
+                type: "get",
+                url: "/template/tree",
+                async: false,
+                success: function (json) {
+                    a = json;
+                },
+                error: function (request, status, error) {
+                    console.log(error)
+                }
+            })
+            return a;
+        }
+
+        function edit(z) {
+            if ($('#template').treeview('getSelected').length == 0) {
+                alert("选择一个模板")
+                return;
+            }
+            var btn = $(z).html()
+            if (btn === "提交") {
+
+                var id = $('#template').treeview('getSelected')[0].id
+                $.ajax({
+                    contentType: "application/json",
+                    type: "put",
+                    url: "/template",
+                    data: JSON.stringify({
+                        id: id,
+                        content: $('#content').val()
+                    }),
+                    async: true,
+                    success: function (json) {
+                        alert("修改成功")
+                        location.reload();
+                    },
+                    error: function (request, status, error) {
+                        console.log(error)
+                    }
+                })
+
+            } else {
+                $(z).html("提交")
+                $('#content').prop('readonly', false);
+            }
+
+
+        }
+
+        function cancel(x) {
+            $(x).prev('button').html("修改")
+            $('#content').prop('readonly', true);
+        }
+
+    </script>
+</body>
+
+</html>

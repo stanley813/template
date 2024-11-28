@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="view" content="width=device-width, initial-scale=1">
+    <title>template</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        .col-sm-6 {
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid" style="margin: 5px;">
+        <div id="titleDiv" class="row">
+            <div class="col-sm-2">
+                <div id="templateSelect" class="panel panel-default">
+                    <!-- <div id="templateName" class="panel-heading" style="text-align: center;"> -->
+                </div>
+            </div>
+        </div>
+
+        <div id="end" class="row">
+            <div class="col-sm-1">
+                <button type="submit" class="btn btn-primary btn-mid" style="margin: 5px;" onclick="save()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/jquery.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script>
+
+        var allInput;
+
+        $(document).ready(function () {
+
+            $.ajax({
+                contentType: "application/json",
+                type: "get",
+                url: "/template",
+                async: true,
+                success: function (data) {
+                    var templateHtml = '<select id="templateName" class="form-control" onchange="templateChange()">'
+                    for (let i = 0; i < data.length; i++) {
+                        var a = data[i]
+                        templateHtml += '<option value="' + a.id + '" >' + a.name + '</option>'
+                    }
+                    templateHtml += '</select>'
+                    $('#templateSelect').append(templateHtml)
+                    templateChange()
+                },
+                error: function (request, status, error) {
+                    console.log(error)
+                }
+            })
+        })
+
+        function getHtmlParams() {
+            var searchParams = new URLSearchParams(window.location.search);
+            var params = {};
+            for (var pair of searchParams.entries()) {
+                params[pair[0]] = pair[1];
+            }
+            return params;
+        }
+
+        function templateChange() {
+
+            $('#titleDiv').nextUntil('#end').html('');
+
+            var params = getHtmlParams()
+            $.ajax({
+                contentType: "application/json",
+                type: "post",
+                url: "/template/getHtmlTemplate",
+                data: JSON.stringify({
+                    id: $('#templateName').val()
+                }),
+                async: true,
+                success: function (json) {
+                    if (!json || json.length == 0) {
+                        alert("该模板暂不可用")
+                        return;
+                    }
+                    var data = JSON.parse(json.content)
+                    allInput = data;
+                    var html = '<div class="row">';
+                    var title = ''
+                    var n = 0;
+                    var _switch = false;
+                    for (let i = 0; i < data.length; i++) {
+                        var item = data[i];
+
+                        
+                        if (i == 0) {
+                            html += '<div class="col-sm-6"><div class="panel panel-default">' +
+                                '<div class="panel-heading">' + item.title + '</div>' +
+                                '<div class="panel-body"><div class="row">'
+                        }
+
+                        if (title.length == 0) { title = item.title }
+                        if (item.title != title) {
+                            html += '</div></div></div></div>'
+                            n++;
+                            title = item.title
+                            if (n && !(n % 2 !== 0)) {
+                                html += '</div><div class="row">'
+                            }
+                            html += '<div class="col-sm-6"><div class="panel panel-default">' +
+                                '<div class="panel-heading">' + item.title + '</div>' +
+                                '<div class="panel-body"><div class="row">'
+
+                        }
+
+                        html += '<div class="col-sm-6" ';
+
+                        if (item.key) {
+                            html += 'style="display: inline-flex;">'
+                            html += ' <label style="margin: 5px;white-space: nowrap;">' +
+                                item.key + '</label>'
+                        } else {
+                            html += '>'
+                        }
+
+                        // 1 文字输入框 2 选项框 3 数值框
+                        if (item.subType == 1) {
+                            html += '<input id="' + item.jsKey + '" type="text" class="form-control" placeholder="">'
+                        } else if (item.subType == 2) {
+                            html += ' <select id="' + item.jsKey + '" class="form-control">'
+                            for (const element of item.valList) {
+                                html += '<option>' + element + '</option>'
+                            }
+                            html += '</select>'
+                        } else if (item.subType == 3) {
+                            html += '<input id="' + item.jsKey + '" type="text" class="form-control" placeholder="">'
+                        } else if (item.subType == 4) {
+
+                        } else { }
+
+                        if (item.unit) {
+                            html += '<label style="margin: 5px;white-space: nowrap;">' + item.unit + '</label>';
+                        }
+                        html += '</div>';
+                    }
+                    html += '</div>';
+                    if ((json.length % 2) == 0) {
+                        html += '</div></div></div></div>'
+                    }
+
+                    $('#titleDiv').after(html);
+
+                },
+                error: function (request, status, error) {
+                    console.log(error)
+                }
+            })
+        }
+
+        function save() {
+            var params = getHtmlParams();
+
+            for (let i = 0; i < allInput.length; i++) {
+                var item = allInput[i];
+                item.userInput = $('#' + item.jsKey).val()
+            }
+            console.log(JSON.stringify(allInput))
+            $.ajax({
+                contentType: "application/json",
+                type: "post",
+                url: "/template/save",
+                data: JSON.stringify(allInput),
+                async: true,
+                success: function (json) {
+                    alert("成功")
+                },
+                error: function (request, status, error) {
+                    console.log(error)
+                }
+            })
+
+        }
+    </script>
+</body>
+
+</html>
