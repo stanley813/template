@@ -1,14 +1,12 @@
 package com.example.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import oracle.net.aso.s;
 
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.example.domain.Abc;
 import com.example.domain.Result;
 import com.example.domain.Template;
+import com.example.service.ResultService;
 import com.example.service.TemplateService;
 
 /**
@@ -37,6 +36,9 @@ public class TemplateController {
 
     @Autowired
     TemplateService templateService;
+
+    @Autowired
+    ResultService resultService;
 
     @GetMapping("/tree")
     public ResponseEntity<JSONArray> getTemplateTree() {
@@ -63,6 +65,7 @@ public class TemplateController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
     @PostMapping()
     public ResponseEntity<Void> addTemplate(@RequestBody Template template) {
 
@@ -96,8 +99,6 @@ public class TemplateController {
         log.info("getHtmlTemplate:{}", JSON.toJSONString(template));
         try {
             Template t = templateService.getById(template.getId());
-            String content = t.getContent();
-            // return ResponseEntity.status(HttpStatus.OK).body(JSON.parseArray(content));
             return ResponseEntity.status(HttpStatus.OK).body(t);
         } catch (Exception e) {
             log.error("getHtmlTemplate error...", e);
@@ -105,10 +106,10 @@ public class TemplateController {
         }
     }
 
-    @PostMapping("/save")
-    public ResponseEntity<Void> saveResult(@RequestBody List<Abc> abcList) {
+    @PostMapping("/save/{otherIds}")
+    public ResponseEntity<Void> saveResult(@PathVariable("otherIds") String otherIds, @RequestBody List<Abc> abcList) {
 
-        log.info("saveResult:{}", JSON.toJSONString(abcList));
+        log.info("saveResult otherIds:{}", otherIds);
         try {
 
             Map<String, String> checkLhm = new LinkedHashMap<>();
@@ -120,7 +121,7 @@ public class TemplateController {
                 String sentence = "";
                 String key = "";
                 if (StringUtils.isNotEmpty(abc.getKey())) {
-                    key = abc.getKey();
+                    key = abc.getKey() + ":";
                 }
                 if (abc.getType() == 1) {
                     sentence = checkLhm.get(title);
@@ -146,11 +147,21 @@ public class TemplateController {
                     conclusionLhm.put(title, sentence);
                 }
             }
-            Result result = new Result();
-            result.setCheck(loopMap(checkLhm));
-            result.setConclusion(loopMap(conclusionLhm));
-            result.setId(1L);
-            log.info(JSON.toJSONString(result));
+            String checkloop = loopMap(checkLhm);
+            String conclusionloop = loopMap(conclusionLhm);
+
+            if (StringUtils.isNoneEmpty(otherIds)) {
+                String[] ids = otherIds.split("_");
+
+                for (String otherId : ids) {
+                    Result result = new Result();
+                    result.setExaminationFinding(checkloop);
+                    result.setConclusion(conclusionloop);
+                    result.setOtherId(otherId);
+                    log.info("##" + JSON.toJSONString(result));
+                    resultService.save(result);
+                }
+            }
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (Exception e) {
             log.error("saveResult error...", e);
@@ -163,7 +174,7 @@ public class TemplateController {
         Iterator<Map.Entry<String, String>> iterator = map.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<String, String> entry = iterator.next();
-            s += entry.getValue() + "\\r ";
+            s += entry.getValue() + System.lineSeparator();
         }
         return s;
     }

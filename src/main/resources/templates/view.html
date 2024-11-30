@@ -24,7 +24,6 @@
         <div id="titleDiv" class="row">
             <div class="col-sm-2">
                 <div id="templateSelect" class="panel panel-default">
-                    <!-- <div id="templateName" class="panel-heading" style="text-align: center;"> -->
                 </div>
             </div>
         </div>
@@ -76,7 +75,7 @@
 
         function templateChange() {
 
-            $('#titleDiv').nextUntil('#end').html('');
+            $('#titleDiv').nextUntil('#end').remove();
 
             var params = getHtmlParams()
             $.ajax({
@@ -88,76 +87,149 @@
                 }),
                 async: true,
                 success: function (json) {
-                    if (!json || json.length == 0) {
+                    if (!json || json.content.length == 0) {
                         alert("该模板暂不可用")
                         return;
                     }
+                    var checkHtml = '<div class="panel panel-default">' +
+                        '<div class="panel-heading">检查所见：</div>' +
+                        '<div class="panel-body"><div class="row">'
+                    var consHtml = '<div class="panel panel-default">' +
+                        '<div class="panel-heading">诊断印象：</div>' +
+                        '<div class="panel-body"><div class="row">'
+
                     var data = JSON.parse(json.content)
                     allInput = data;
-                    var html = '<div class="row">';
-                    var title = ''
-                    var n = 0;
-                    var _switch = false;
+
+
+                    var typeMap = new Map();
+
                     for (let i = 0; i < data.length; i++) {
                         var item = data[i];
-
-                        
-                        if (i == 0) {
-                            html += '<div class="col-sm-6"><div class="panel panel-default">' +
-                                '<div class="panel-heading">' + item.title + '</div>' +
-                                '<div class="panel-body"><div class="row">'
+                        var type = item.type
+                        var titleMap = typeMap.get(type)
+                        if (!titleMap) {
+                            titleMap = new Map()
                         }
 
-                        if (title.length == 0) { title = item.title }
-                        if (item.title != title) {
-                            html += '</div></div></div></div>'
-                            n++;
-                            title = item.title
-                            if (n && !(n % 2 !== 0)) {
-                                html += '</div><div class="row">'
-                            }
-                            html += '<div class="col-sm-6"><div class="panel panel-default">' +
+                        var title = item.title
+                        var titleHtml = titleMap.get(title)
+                        if (!titleHtml) {
+                            titleHtml = '<div class="col-sm-6"><div class="panel panel-default">' +
                                 '<div class="panel-heading">' + item.title + '</div>' +
-                                '<div class="panel-body"><div class="row">'
-
+                                '<div class="panel-body"><div class="row">';
                         }
 
-                        html += '<div class="col-sm-6" ';
+
+                        titleHtml += '<div class="col-sm-6" ';
 
                         if (item.key) {
-                            html += 'style="display: inline-flex;">'
-                            html += ' <label style="margin: 5px;white-space: nowrap;">' +
-                                item.key + '</label>'
+                            titleHtml += 'style="display: inline-flex;">'
+                            titleHtml += ' <label style="margin: 5px;white-space: nowrap;">' +
+                                item.key + ':</label>'
                         } else {
-                            html += '>'
+                            titleHtml += '>'
                         }
 
                         // 1 文字输入框 2 选项框 3 数值框
                         if (item.subType == 1) {
-                            html += '<input id="' + item.jsKey + '" type="text" class="form-control" placeholder="">'
+                            titleHtml += '<input id="' + item.jsKey + '" type="text" class="form-control" placeholder="">'
                         } else if (item.subType == 2) {
-                            html += ' <select id="' + item.jsKey + '" class="form-control">'
+                            titleHtml += ' <select id="' + item.jsKey + '" class="form-control">'
                             for (const element of item.valList) {
-                                html += '<option>' + element + '</option>'
+                                titleHtml += '<option>' + element + '</option>'
                             }
-                            html += '</select>'
+                            titleHtml += '</select>'
                         } else if (item.subType == 3) {
-                            html += '<input id="' + item.jsKey + '" type="text" class="form-control" placeholder="">'
+                            titleHtml += '<input id="' + item.jsKey + '" type="text" class="form-control" placeholder="">'
                         } else if (item.subType == 4) {
 
                         } else { }
 
                         if (item.unit) {
-                            html += '<label style="margin: 5px;white-space: nowrap;">' + item.unit + '</label>';
+                            titleHtml += '<label style="margin: 5px;white-space: nowrap;">' + item.unit + '</label>';
                         }
-                        html += '</div>';
-                    }
-                    html += '</div>';
-                    if ((json.length % 2) == 0) {
-                        html += '</div></div></div></div>'
-                    }
+                        titleHtml += '</div>';
+                        titleMap.set(title, titleHtml);
+                        typeMap.set(type, titleMap);
 
-                    $('#titleDiv').after(html);
+                    }
+                    var checkTitleMap = typeMap.get(1)
+                    checkHtml += loop(checkTitleMap)
+
+                    var consTitleMap = typeMap.get(2)
+                    consHtml += loop(consTitleMap)
+
+                    $('#titleDiv').after(checkHtml + consHtml);
+
+                    /*
+                    
+                    
+                                        var html = '<div class="row">';
+                                        var title = ''
+                                        var n = 0;
+                                        var _switch = false;
+                    
+                                        for (let i = 0; i < data.length; i++) {
+                                            var item = data[i];
+                    
+                                            if (i == 0) {
+                                                html += '<div class="col-sm-6"><div class="panel panel-default">' +
+                                                    '<div class="panel-heading">' + item.title + '</div>' +
+                                                    '<div class="panel-body"><div class="row">'
+                                            }
+                    
+                                            if (title.length == 0) { title = item.title }
+                                            if (item.title != title) {
+                                                html += '</div></div></div></div>'
+                                                n++;
+                                                title = item.title
+                                                if (n && !(n % 2 !== 0)) {
+                                                    html += '</div><div class="row">'
+                                                }
+                                                html += '<div class="col-sm-6"><div class="panel panel-default">' +
+                                                    '<div class="panel-heading">' + item.title + '</div>' +
+                                                    '<div class="panel-body"><div class="row">'
+                                            }
+                    
+                                            html += '<div class="col-sm-6" ';
+                    
+                                            if (item.key) {
+                                                html += 'style="display: inline-flex;">'
+                                                html += ' <label style="margin: 5px;white-space: nowrap;">' +
+                                                    item.key + '</label>'
+                                            } else {
+                                                html += '>'
+                                            }
+                    
+                                            // 1 文字输入框 2 选项框 3 数值框
+                                            if (item.subType == 1) {
+                                                html += '<input id="' + item.jsKey + '" type="text" class="form-control" placeholder="">'
+                                            } else if (item.subType == 2) {
+                                                html += ' <select id="' + item.jsKey + '" class="form-control">'
+                                                for (const element of item.valList) {
+                                                    html += '<option>' + element + '</option>'
+                                                }
+                                                html += '</select>'
+                                            } else if (item.subType == 3) {
+                                                html += '<input id="' + item.jsKey + '" type="text" class="form-control" placeholder="">'
+                                            } else if (item.subType == 4) {
+                    
+                                            } else { }
+                    
+                                            if (item.unit) {
+                                                html += '<label style="margin: 5px;white-space: nowrap;">' + item.unit + '</label>';
+                                            }
+                                            html += '</div>';
+                                        }
+                                        html += '</div>';
+                                        if ((data.length % 2) == 0) {
+                                            console.log(123)
+                                            html += '</div></div></div></div>'
+                                        }
+                                        console.log(html)
+                                        $('#titleDiv').after(html);
+                    */
 
                 },
                 error: function (request, status, error) {
@@ -166,22 +238,44 @@
             })
         }
 
+        function loop(map) {
+            var a = '';
+            var n = 1;
+            for (let [key, value] of map) {
+                a += value + '</div></div></div></div>'
+                if (n % 2 === 0) {
+                    a += '</div><div class="row">'
+                }
+                n++;
+            }
+            return a + '</div></div></div>';
+        }
+
+
         function save() {
             var params = getHtmlParams();
+
+            var id = '';
+            if (params.id) {
+                id = params.id
+            } else {
+                alert('缺少必要的号码')
+                return;
+            }
 
             for (let i = 0; i < allInput.length; i++) {
                 var item = allInput[i];
                 item.userInput = $('#' + item.jsKey).val()
             }
-            console.log(JSON.stringify(allInput))
             $.ajax({
                 contentType: "application/json",
                 type: "post",
-                url: "/template/save",
+                url: "/template/save/" + id,
                 data: JSON.stringify(allInput),
                 async: true,
                 success: function (json) {
                     alert("成功")
+                    window.close();
                 },
                 error: function (request, status, error) {
                     console.log(error)
